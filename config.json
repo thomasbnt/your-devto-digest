@@ -1,0 +1,18 @@
+{
+  "title": "Your dev.to digest {date}",
+  "sendDay": "monday",
+  "accentColor": "#690014",
+  "relevantCount": 16,
+  "discoveryCount": 8,
+  "discoveryMinReactions": 10,
+  "discoveryMaxOverlap": null,
+  "lookbackDays": 7,
+  "extraInterestTags": [],
+  "ignoreTags": [],
+  "ignoreAuthors": [],
+  "summaryLang": "en",
+  "llm": {
+    "baseUrl": "https://api.mistral.ai/v1",
+    "model": "mistral-small-latest"
+  }
+}
