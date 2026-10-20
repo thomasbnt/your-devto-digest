@@ -1,0 +1,30 @@
+{
+  "name": "devto-digest",
+  "version": "0.1.0",
+  "description": "Weekly email digest of dev.to articles: relevant to your followed tags, plus popular ones to discover outside them. Summaries by an open-weight LLM.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/thomasbnt/your-devto-digest",
+  "repository": { "type": "git", "url": "git+https://github.com/thomasbnt/your-devto-digest.git" },
+  "engines": {
+    "node": ">=22.9"
+  },
+  "packageManager": "yarn@4.12.0",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env app.js run",
+    "collect": "node --env-file-if-exists=.env app.js collect",
+    "send": "node --env-file-if-exists=.env app.js send",
+    "dry-run": "DRY_RUN=1 node --env-file-if-exists=.env app.js send",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "nodemailer": "^10.1.7"
+  },
+  "keywords": [
+    "dev.to",
+    "digest",
+    "newsletter",
+    "mistral",
+    "open-source-ai"
+  ]
+}
