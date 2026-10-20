@@ -1,0 +1,105 @@
+name: devto-digest
+
+on:
+  schedule:
+    - cron: '0 7 * * *' # daily, 07:00 UTC. `collect` always runs, `send` only on config.json "sendDay".
+  workflow_dispatch:
+    inputs:
+      command:
+        description: 'collect = refresh pool only, run = collect then send on sendDay, force-send = collect then send now'
+        type: choice
+        options:
+          - collect
+          - run
+          - force-send
+        default: collect
+
+concurrency:
+  group: devto-digest
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    name: collect
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - run: corepack enable
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: yarn
+
+      - run: yarn install --immutable
+
+      # state.json holds the candidate pool and the list of already-sent articles.
+      - name: Restore state
+        uses: actions/cache/restore@v6
+        with:
+          path: state.json
+          key: devto-digest-state-${{ github.run_id }}-collect
+          restore-keys: devto-digest-state-
+
+      - name: Collect
+        run: node app.js collect
+        env:
+          DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+
+      - name: Save state
+        if: always()
+        uses: actions/cache/save@v6
+        with:
+          path: state.json
+          key: devto-digest-state-${{ github.run_id }}-collect
+
+  send:
+    name: send
+    needs: collect
+    # Runs after a successful collect, except when "collect" alone was picked.
+    if: ${{ needs.collect.result == 'success' && inputs.command != 'collect' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - run: corepack enable
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: yarn
+
+      - run: yarn install --immutable
+
+      - name: Restore state
+        uses: actions/cache/restore@v6
+        with:
+          path: state.json
+          key: devto-digest-state-${{ github.run_id }}-collect
+          restore-keys: devto-digest-state-
+
+      # "force-send" sends the email now. Otherwise (run, daily cron) it only sends on sendDay, once a day.
+      - name: Send
+        run: node app.js "$COMMAND"
+        env:
+          COMMAND: ${{ inputs.command == 'force-send' && 'send' || 'send-if-due' }}
+          DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+
+      - name: Save state
+        if: always()
+        uses: actions/cache/save@v6
+        with:
+          path: state.json
+          key: devto-digest-state-${{ github.run_id }}-send
