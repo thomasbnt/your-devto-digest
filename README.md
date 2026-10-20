@@ -1,4 +1,4 @@
-![devto-digest banner: a sleeping sloth on a Git branch that leads to an email envelope](https://github.com/user-attachments/assets/c66e7384-8ce1-45bd-a9f8-7830eab56125)
+![devto-digest banner: a sleeping sloth on a Git branch that leads to an email envelope](https://github.com/user-attachments/assets/a69bc3eb-bd7e-464a-9e01-3f0ac27aef2a)
 
 # devto-digest
 
